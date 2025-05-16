@@ -1,0 +1,5 @@
+# ROOT Configuration
+root_version: "v6-32-02"
+
+root_source_dir: "{{ ansible_env.HOME }}/root_source"
+
