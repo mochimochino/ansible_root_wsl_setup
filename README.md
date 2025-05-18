@@ -17,4 +17,3 @@ ansible-root-wsl-setup/
         └── tasks/
             └── main.yml
 ```
-
