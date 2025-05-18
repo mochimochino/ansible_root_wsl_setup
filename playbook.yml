@@ -1,0 +1,8 @@
+- name: Setup ROOT environment on WSL AlmaLinux 9
+  hosts: wsl_al9
+  become: yes
+  vars_files:
+    - vars/wsl_almalinux_vars.yml
+  roles:
+    - role: wsl_almalinux_setup
+    - role: root_install_binary

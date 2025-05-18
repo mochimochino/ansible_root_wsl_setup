@@ -1,5 +1,45 @@
 # ROOT Configuration
-root_version: "v6-32-02"
+root_version: "v6.32.12" #2025/05/18
+root_binary_variant: "Linux-almalinux9.5-x86_64-gcc11.5"
+root_tarball_filename: "root_{{ root_version }}.{{ root_binary_variant }}.tar.gz"
+root_download_url: "https://root.cern/download/{{ root_tarball_filename }}"
 
-root_source_dir: "{{ ansible_env.HOME }}/root_source"
+user_actual_home: "{{ lookup('env', 'HOME') }}"
+root_install_parent_dir: "{{ user_actual_home }}"
+root_final_install_dir: "{{ root_install_parent_dir }}/root"
 
+#AL9 system configuration
+required_base_packages:
+  - git
+  - libX11-devel
+  - libXpm-devel
+  - libXft
+  - libXft-devel
+  - libXext-devel
+  - python3
+  - openssl-devel
+  - xrootd-client-devel
+  - xrootd-libs-devel
+  - xxhash-libs
+  
+
+optional_packages:
+ - gcc-gfortran
+ - pcre-devel
+ - mesa-libGL-devel
+ - mesa-libGLU-devel
+ - mysql-devel
+ - fftw-devel
+ - libuuid-devel
+ - openldap-devel
+ - python3-numpy
+ - libxml2-devel
+ - gsl-devel
+ - readline-devel
+ - ftgl-devel 
+ - cfitsio-devel
+ - avahi-compat-libdns_sd-devel
+ - glew-devel
+ - graphviz-devel
+ - qt5-qtwebengine-devel 
+shell_config_file: "{{ user_actual_home }}/.bashrc"

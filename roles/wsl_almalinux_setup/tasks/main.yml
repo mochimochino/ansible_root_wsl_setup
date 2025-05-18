@@ -1,0 +1,27 @@
+- name: Install dnf-plugins-core (for dnf config-manager)
+  ansible.builtin.dnf:
+    name: dnf-plugins-core
+    state: present
+
+- name: Enable EPEL repository
+  ansible.builtin.dnf:
+    name: epel-release
+    state: present
+
+- name: Enable CodeReady Linux Builder (CRB) repository
+  ansible.builtin.command: dnf config-manager --set-enabled crb
+  register: crb_enable_result
+  changed_when: crb_enable_result.rc == 0 and "Nothing to do" not in crb_enable_result.stdout
+  failed_when: crb_enable_result.rc != 0 and "No such command config-manager" not in crb_enable_result.stderr
+  become: yes
+
+- name: Install required base packages
+  ansible.builtin.dnf:
+    name: "{{ required_base_packages }}"
+    state: present
+
+- name: Install common optional packages (if any are defined)
+  ansible.builtin.dnf:
+    name: "{{ optional_packages }}"
+    state: present
+  when: optional_packages is defined and optional_packages | length > 0

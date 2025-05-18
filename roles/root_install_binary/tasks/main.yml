@@ -1,0 +1,79 @@
+#- name: Debug root_final_install_dir value
+#  ansible.builtin.debug:
+#    var: root_final_install_dir
+#  become: no
+
+#- name: Debug user_actual_home value (from lookup('env', 'HOME'))
+#  ansible.builtin.debug:
+#    var: user_actual_home
+#  become: no
+
+- name: Ensure parent directory for ROOT installation exists
+  ansible.builtin.file:
+    path: "{{ root_install_parent_dir }}"
+    state: directory
+    mode: '0755'
+  become: no
+- name: Check if ROOT is already installed
+  ansible.builtin.stat:
+    path: "{{ root_final_install_dir }}/bin/thisroot.sh"
+  register: root_install_check
+  become: no
+
+- name: Create parent directory for ROOT installation
+  ansible.builtin.file:
+    path: "{{ root_install_parent_dir }}"
+    state: directory
+    mode: '0755'
+  become: no
+  when: not root_install_check.stat.exists
+
+- name: Debug download URL and filename
+  ansible.builtin.debug:
+    msg: "Attempting to download: {{ root_download_url }} (filename: {{ root_tarball_filename }})"
+  become: no
+
+- name: Download ROOT binary tarball
+  ansible.builtin.get_url:
+    url: "{{ root_download_url }}"
+    dest: "{{ root_install_parent_dir }}/{{ root_tarball_filename }}"
+    mode: '0644'
+  become: no
+  when: not root_install_check.stat.exists
+  register: download_result
+
+- name: Unarchive ROOT binary tarball
+  ansible.builtin.unarchive:
+    src: "{{ root_install_parent_dir }}/{{ root_tarball_filename }}"
+    dest: "{{ root_install_parent_dir }}"
+    remote_src: yes
+    creates: "{{ root_final_install_dir }}/bin/thisroot.sh"
+  become: no
+  when: not root_install_check.stat.exists and download_result is succeeded
+
+#- name: Ensure the extracted ROOT directory has the expected name 'root'
+#  ansible.builtin.command: "mv {{ root_install_parent_dir }}/root_{{ root_version }} {{ root_final_install_dir }}"
+#  args:
+#  become: no
+#  when: >
+#    not root_install_check.stat.exists and
+#    (ansible_check_mode or (
+#      (stat(path="{{ root_install_parent_dir }}/root_{{ root_version }}").stat.exists | default(false)) and
+#      not (stat(path="{{ root_final_install_dir }}").stat.exists | default(false))
+#    ))
+
+- name: Add ROOT environment setup to shell config file
+  ansible.builtin.lineinfile:
+    path: "{{ shell_config_file }}"
+    line: "source {{ root_final_install_dir }}/bin/thisroot.sh"
+    create: yes
+    state: present
+    regexp: "^source .*{{ root_final_install_dir | regex_escape }}/bin/thisroot\\.sh$"
+  become: no
+
+- name: Clean up downloaded tarball
+  ansible.builtin.file:
+    path: "{{ root_install_parent_dir }}/{{ root_tarball_filename }}"
+    state: absent
+  become: no
+  when: download_result is succeeded

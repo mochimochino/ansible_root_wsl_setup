@@ -1,4 +1,24 @@
 ## Ansibleを用いたROOT環境の構築
+[ROOT公式](https://root.cern/install/)をもとに必要なパッケージをインストールし、環境構築を行う。
+### 事前準備
+epelのインストールと、Ansibleのインストールを行う。
+```
+sudo dnf install -y epel-release
+```
+```
+sudo dnf install -y ansible python3-pip
+```
+### Playbookの実行方法
+- Playbookを配置したディレクトリへの移動
+```
+cd ~/ansible-root-wsl-setup
+```
+- Ansible Playbookの実行
+```
+ansible-playbook -i inventory.ini playbook.yml -K
+``` 
+(詳細なログを表示したい場合は-vをつけて実行する。）
+
 ### ディレクトリの構成
 ```
 ansible-root-wsl-setup/
@@ -7,13 +27,10 @@ ansible-root-wsl-setup/
 ├── vars/
 │   └── wsl_almalinux_vars.yml  # WSL AlmaLinux 9用の変数を定義
 └── roles/
-    ├── common_prerequisites/     # 共通の前提条件 (ディレクトリ作成など)
+     ├── wsl_almalinux_setup/      # リポジトリ設定と依存パッケージインストール
     │   └── tasks/
     │       └── main.yml
-    ├── wsl_almalinux_setup/      # WSL AlmaLinux 9固有のパッケージインストールなど
-    │   └── tasks/
-    │       └── main.yml
-    └── root_build/               # ROOTのダウンロード、ビルド、インストール
+    └── root_install_binary/      # ROOTバイナリのダウンロード、展開、環境設定
         └── tasks/
             └── main.yml
 ```
